@@ -1,0 +1,73 @@
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  application:
+    name: bba-palm-chain
+    version: v1.0.0
+  output:
+    ansi:
+      enabled: always
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  profiles:
+    active: dev
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+#        default_schema: bba_palm_chain
+        default_schema: bba_palm_chain_dev
+        order_updates: true
+        jdbc:
+          batch_size: 500
+        generate_statistics: false
+        cache:
+          use_query_cache: false
+          use_second_level_cache: false
+        hbm2ddl:
+          auto: update
+        id:
+          sequence:
+            increment_size: 1   # BARIS INI WAJIB!
+    database: postgresql
+    show-sql: true
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres
+    username: ${DB_USER:postgres.feqacumzbzhcnrdzxzeh}
+    password: ${DB_PWD:Adm1n1str4t0r}
+#  datasource:
+#    type: com.zaxxer.hikari.HikariDataSource
+#    url: jdbc:postgresql://100.111.186.10:5432/db_test
+#    username: ${DB_USER:usertest}
+#    password: ${DB_PWD:password123}
+    hikari:
+      maximum-pool-size: 5      # jumlah koneksi maksimal
+      minimum-idle: 2            # koneksi idle minimum
+      idle-timeout: 60000        # 60 detik idle sebelum koneksi dilepas
+      max-lifetime: 1800000      # 30 menit koneksi di-recycle
+      connection-timeout: 30000
+
+server:
+  port: 8080
+  shutdown: graceful
+
+error:
+  handling:
+    http-status-in-json-response: true
+    exception-logging: NO_LOGGING
+    full-stacktrace-http-statuses: 5xx
+    log-levels:
+      5xx: ERROR
+springdoc:
+  pathsToMatch: /, /api/**
+
+jwt:
+  secret: my-super-secret-key
+
+telegram:
+  bot-foto:
+    username: troi_foto_metadata_bot
+    token: 8439777461:AAGPP9O0uckNqBhdUhfAKAPaQiAkjCkNeJc

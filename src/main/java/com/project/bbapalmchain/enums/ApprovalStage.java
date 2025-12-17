@@ -1,0 +1,14 @@
+package com.project.bbapalmchain.enums;
+
+public enum ApprovalStage {
+
+    SUBMITTED_BY_ADMIN_OPS,
+    ACKNOWLEDGED_BY_STAFF_OPS,
+    APPROVED_BY_MANAGER_OPS,
+    REVIEWED_BY_FINANCE,
+    APPROVED_BY_MANAGER,
+    APPROVED_BY_MANAGER_FIN,
+    APPROVED_BY_DIRECTOR,
+    REJECTED
+
+}
