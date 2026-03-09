@@ -172,7 +172,7 @@ public class TripService {
             headerCellStyle.setFont(headerFont);
 
             // Buat Header Row
-            String[] headers = {"Tanggal", "Tujuan", "Asal", "Driver", "Kendaraan", "Kontraktor", "Berat Muatan (Kg)", "Rate (Rp)", "Rate Kontraktor (Rp)", "Pendapatan (Rp)", "Pelunasan Kontraktor (Rp)", "Uang Jalan (Rp)", "Uang Muat (Rp)", "Konsumsi (Rp)", "Additional Fee 1 (Rp)", "Additional Fee 2 (Rp)", "Additional Fee 3 (Rp)", "Total Pengeluaran (Rp)", "Laba/Rugi (Rp)"};
+            String[] headers = {"Tanggal", "Tipe", "Tujuan", "Asal", "Driver", "Kendaraan", "Kontraktor", "Berat Muatan (Kg)", "Rate (Rp)", "Rate Kontraktor (Rp)", "Pendapatan (Rp)", "Pelunasan Kontraktor (Rp)", "Uang Jalan (Rp)", "Uang Muat (Rp)", "Konsumsi (Rp)", "Additional Fee 1 (Rp)", "Additional Fee 2 (Rp)", "Additional Fee 3 (Rp)", "Total Pengeluaran (Rp)", "Laba/Rugi (Rp)"};
             Row headerRow = sheet.createRow(0);
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -191,24 +191,25 @@ public class TripService {
 
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(trip.getDate().toString());
-                row.createCell(1).setCellValue(trip.getMill()==null ? "" : trip.getMill().getName());
-                row.createCell(2).setCellValue(trip.getAfdeling()==null ? "" : trip.getAfdeling().getName());
-                row.createCell(3).setCellValue(trip.getDriver()==null ? "" : trip.getDriver().getName());
-                row.createCell(4).setCellValue(trip.getVehicle()==null ? "" : trip.getVehicle().getLicensePlatNumber());
-                row.createCell(5).setCellValue(trip.getContractor()==null ? "" : trip.getContractor().getName());
-                row.createCell(6).setCellValue(trip.getLoadWeightKg().doubleValue());
-                row.createCell(7).setCellValue(trip.getPtpnRate().doubleValue());
-                row.createCell(8).setCellValue(trip.getContractorRate().doubleValue());
-                row.createCell(9).setCellValue(pendapatanPtpn.doubleValue());
-                row.createCell(10).setCellValue(pelunasanKontraktor.doubleValue());
-                row.createCell(11).setCellValue(trip.getTravelAllowance().doubleValue());
-                row.createCell(12).setCellValue(trip.getLoadingFee().doubleValue());
-                row.createCell(13).setCellValue(trip.getConsumptionFee().doubleValue());
-                row.createCell(14).setCellValue(trip.getAdditionalFee1().doubleValue());
-                row.createCell(15).setCellValue(trip.getAdditionalFee2().doubleValue());
-                row.createCell(16).setCellValue(trip.getAdditionalFee3().doubleValue());
-                row.createCell(17).setCellValue(totalPengeluaran.doubleValue());
-                row.createCell(18).setCellValue(labaRugi.doubleValue());
+                row.createCell(1).setCellValue(trip.getTripType()==null ? "" : trip.getTripType().getName());
+                row.createCell(2).setCellValue(trip.getMill()==null ? "" : trip.getMill().getName());
+                row.createCell(3).setCellValue(trip.getAfdeling()==null ? "" : trip.getAfdeling().getName());
+                row.createCell(4).setCellValue(trip.getDriver()==null ? "" : trip.getDriver().getName());
+                row.createCell(5).setCellValue(trip.getVehicle()==null ? "" : trip.getVehicle().getLicensePlatNumber());
+                row.createCell(6).setCellValue(trip.getContractor()==null ? "" : trip.getContractor().getName());
+                row.createCell(7).setCellValue(trip.getLoadWeightKg().doubleValue());
+                row.createCell(8).setCellValue(trip.getPtpnRate().doubleValue());
+                row.createCell(9).setCellValue(trip.getContractorRate().doubleValue());
+                row.createCell(10).setCellValue(pendapatanPtpn.doubleValue());
+                row.createCell(11).setCellValue(pelunasanKontraktor.doubleValue());
+                row.createCell(12).setCellValue(trip.getTravelAllowance().doubleValue());
+                row.createCell(13).setCellValue(trip.getLoadingFee().doubleValue());
+                row.createCell(14).setCellValue(trip.getConsumptionFee().doubleValue());
+                row.createCell(15).setCellValue(trip.getAdditionalFee1().doubleValue());
+                row.createCell(16).setCellValue(trip.getAdditionalFee2().doubleValue());
+                row.createCell(17).setCellValue(trip.getAdditionalFee3().doubleValue());
+                row.createCell(18).setCellValue(totalPengeluaran.doubleValue());
+                row.createCell(19).setCellValue(labaRugi.doubleValue());
             }
 
             // Auto-size columns

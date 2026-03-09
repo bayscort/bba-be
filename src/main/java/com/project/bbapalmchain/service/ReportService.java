@@ -1,6 +1,7 @@
 package com.project.bbapalmchain.service;
 
 import com.project.bbapalmchain.dto.*;
+import com.project.bbapalmchain.dto.projection.CashflowProjection;
 import com.project.bbapalmchain.dto.projection.SummaryFinancePerItemProjection;
 import com.project.bbapalmchain.dto.projection.SummaryPerContractorProjection;
 import com.project.bbapalmchain.enums.VehicleType;
@@ -283,6 +284,150 @@ public class ReportService {
 
                     return dto;
                 })
+                .collect(Collectors.toList());
+    }
+
+    public List<CashflowDTO> getCashflow(String type, Long accountId, Integer year) {
+        List<CashflowProjection> projections;
+
+        // 1. Pilih Repository
+        if ("receipt".equalsIgnoreCase(type)) {
+            projections = receiptRepository.findCashflowByYear(accountId, year);
+        } else if ("expenditure".equalsIgnoreCase(type)) {
+            projections = expenditureRepository.findCashflowByYear(accountId, year);
+        } else {
+            throw new IllegalArgumentException("Invalid report type. Must be 'receipt' or 'expenditure'.");
+        }
+
+        if (projections.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 2. Grouping Logic: Map<CategoryName, Map<ItemName, List<Projections>>>
+        //    Projections di sini berisi pecahan per bulan
+        Map<String, Map<String, List<CashflowProjection>>> groupedData = projections.stream()
+                .collect(Collectors.groupingBy(
+                        CashflowProjection::getItemCategory,
+                        Collectors.groupingBy(CashflowProjection::getFinanceItem)
+                ));
+
+        // 3. Transformasi ke DTO
+        return groupedData.entrySet().stream()
+                .map(categoryEntry -> {
+                    String categoryName = categoryEntry.getKey();
+                    Map<String, List<CashflowProjection>> itemsMap = categoryEntry.getValue();
+
+                    // a. Proses setiap Item dalam Kategori ini
+                    List<CashflowItemDTO> itemDTOs = itemsMap.entrySet().stream()
+                            .map(itemEntry -> {
+                                String itemName = itemEntry.getKey();
+                                List<CashflowProjection> monthlyData = itemEntry.getValue();
+
+                                // Init array 12 bulan dengan 0
+                                BigDecimal[] monthlyAmount = new BigDecimal[12];
+                                Arrays.fill(monthlyAmount, BigDecimal.ZERO);
+                                BigDecimal itemYearlyTotal = BigDecimal.ZERO;
+
+                                // Isi array berdasarkan bulan yang ada di database
+                                for (CashflowProjection p : monthlyData) {
+                                    int monthIndex = p.getMonth() - 1; // DB 1-12 -> Array 0-11
+                                    if (monthIndex >= 0 && monthIndex < 12) {
+                                        monthlyAmount[monthIndex] = p.getTotalAmount();
+                                        itemYearlyTotal = itemYearlyTotal.add(p.getTotalAmount());
+                                    }
+                                }
+
+                                return new CashflowItemDTO(itemName, monthlyAmount, itemYearlyTotal);
+                            })
+                            .sorted(Comparator.comparing(CashflowItemDTO::getFinanceItem)) // Optional: sort by item name
+                            .collect(Collectors.toList());
+
+                    // b. Hitung Total Kategori per Bulan (Agregasi vertikal dari items)
+                    BigDecimal[] categoryMonthlyTotal = new BigDecimal[12];
+                    Arrays.fill(categoryMonthlyTotal, BigDecimal.ZERO);
+                    BigDecimal categoryYearlyTotal = BigDecimal.ZERO;
+
+                    for (CashflowItemDTO item : itemDTOs) {
+                        categoryYearlyTotal = categoryYearlyTotal.add(item.getYearlyTotal());
+                        for (int i = 0; i < 12; i++) {
+                            categoryMonthlyTotal[i] = categoryMonthlyTotal[i].add(item.getMonthlyAmount()[i]);
+                        }
+                    }
+
+                    return new CashflowDTO(categoryName, itemDTOs, categoryMonthlyTotal, categoryYearlyTotal);
+                })
+                .sorted(Comparator.comparing(CashflowDTO::getItemCategory)) // Sort kategori A-Z
+                .collect(Collectors.toList());
+    }
+
+    public List<CashflowDTO> getCombineCashflow(String type, List<Long> accountIds, Integer year) {
+        List<CashflowProjection> projections;
+
+        if ("receipt".equalsIgnoreCase(type)) {
+            projections = receiptRepository.findCashflowByAccountIdsAndYear(accountIds, year);
+        } else if ("expenditure".equalsIgnoreCase(type)) {
+            projections = expenditureRepository.findCashflowByAccountIdsAndYear(accountIds, year);
+        } else {
+            throw new IllegalArgumentException("Invalid report type. Must be 'receipt' or 'expenditure'.");
+        }
+
+        return mapProjectionsToCashflowDTO(projections);
+    }
+
+    private List<CashflowDTO> mapProjectionsToCashflowDTO(List<CashflowProjection> projections) {
+        if (projections.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 1. Grouping
+        Map<String, Map<String, List<CashflowProjection>>> groupedData = projections.stream()
+                .collect(Collectors.groupingBy(
+                        CashflowProjection::getItemCategory,
+                        Collectors.groupingBy(CashflowProjection::getFinanceItem)
+                ));
+
+        // 2. Mapping to DTO
+        return groupedData.entrySet().stream()
+                .map(categoryEntry -> {
+                    String categoryName = categoryEntry.getKey();
+                    Map<String, List<CashflowProjection>> itemsMap = categoryEntry.getValue();
+
+                    List<CashflowItemDTO> itemDTOs = itemsMap.entrySet().stream()
+                            .map(itemEntry -> {
+                                String itemName = itemEntry.getKey();
+                                List<CashflowProjection> monthlyData = itemEntry.getValue();
+
+                                BigDecimal[] monthlyAmount = new BigDecimal[12];
+                                Arrays.fill(monthlyAmount, BigDecimal.ZERO);
+                                BigDecimal itemYearlyTotal = BigDecimal.ZERO;
+
+                                for (CashflowProjection p : monthlyData) {
+                                    int monthIndex = p.getMonth() - 1;
+                                    if (monthIndex >= 0 && monthIndex < 12) {
+                                        monthlyAmount[monthIndex] = p.getTotalAmount();
+                                        itemYearlyTotal = itemYearlyTotal.add(p.getTotalAmount());
+                                    }
+                                }
+
+                                return new CashflowItemDTO(itemName, monthlyAmount, itemYearlyTotal);
+                            })
+                            .sorted(Comparator.comparing(CashflowItemDTO::getFinanceItem))
+                            .collect(Collectors.toList());
+
+                    BigDecimal[] categoryMonthlyTotal = new BigDecimal[12];
+                    Arrays.fill(categoryMonthlyTotal, BigDecimal.ZERO);
+                    BigDecimal categoryYearlyTotal = BigDecimal.ZERO;
+
+                    for (CashflowItemDTO item : itemDTOs) {
+                        categoryYearlyTotal = categoryYearlyTotal.add(item.getYearlyTotal());
+                        for (int i = 0; i < 12; i++) {
+                            categoryMonthlyTotal[i] = categoryMonthlyTotal[i].add(item.getMonthlyAmount()[i]);
+                        }
+                    }
+
+                    return new CashflowDTO(categoryName, itemDTOs, categoryMonthlyTotal, categoryYearlyTotal);
+                })
+                .sorted(Comparator.comparing(CashflowDTO::getItemCategory))
                 .collect(Collectors.toList());
     }
 

@@ -22,7 +22,7 @@ public interface FundRequestMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "fundRequestApprovalLogList", ignore = true)
     @Mapping(target = "fundRequestItemList", ignore = true)
-    @Mapping(target = "fundRequestCode", ignore = true)
+//    @Mapping(target = "fundRequestCode", ignore = true)
     void toUpdate(@MappingTarget FundRequest entity, FundRequestDTO dto);
 
 }

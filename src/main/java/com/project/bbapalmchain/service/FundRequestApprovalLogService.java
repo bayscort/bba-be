@@ -144,6 +144,17 @@ public class FundRequestApprovalLogService {
             }
         }
 
+        if (dto.getApprovalStage().equals(ApprovalStage.REJECTED)) {
+
+            if (!userContext.getCurrentUser().getRole().getId()
+                    .equals(fundRequestOpt.get().getNextApprovalRoleId())) {
+                throw new ForbiddenException("You are not authorized to reject this fund request.");
+            }
+
+            fundRequestOpt.get().setNextApprovalRoleId(null);
+            fundRequestRepository.save(fundRequestOpt.get());
+        }
+
         FundRequestApprovalLog log = new FundRequestApprovalLog();
         log.setFundRequest(fundRequestOpt.get());
         log.setApprovalStage(dto.getApprovalStage());

@@ -106,8 +106,7 @@ public class FundRequestService {
     public Long create(FundRequestDTO dto) {
         FundRequest entity = fundRequestMapper.toEntity(dto);
 
-        String fundRequestCode = generateFundRequestCode();
-        entity.setFundRequestCode(fundRequestCode);
+        entity.setFundRequestCode(dto.getFundRequestCode());
 
         BigDecimal total = BigDecimal.ZERO;
         List<FundRequestItem> fundRequestItemList = new ArrayList<>();

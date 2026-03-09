@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(value = "/api/reports", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -74,6 +75,22 @@ public class ReportController {
             @RequestParam(required = false) String endDate,
             @RequestParam(required = false) List<Long> tripTypeIds) {
         return ResponseEntity.ok(reportService.getSummaryPerTripType(startDate, endDate, tripTypeIds));
+    }
+
+    @GetMapping("/cashflow")
+    public ResponseEntity<List<CashflowDTO>> getCashflow(
+            @RequestParam String type,
+            @RequestParam Long accountId,
+            @RequestParam Integer year) {
+        return ResponseEntity.ok(reportService.getCashflow(type, accountId, year));
+    }
+
+    @GetMapping("/combine-cashflow")
+    public ResponseEntity<List<CashflowDTO>> getCombineCashflow(
+            @RequestParam String type,
+            @RequestParam List<Long> accountIds, // Spring otomatis mapping comma-separated string ke List<UUID>
+            @RequestParam Integer year) {
+        return ResponseEntity.ok(reportService.getCombineCashflow(type, accountIds, year));
     }
 
 }

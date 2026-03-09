@@ -1,6 +1,7 @@
 package com.project.bbapalmchain.repository;
 
 import com.project.bbapalmchain.dto.SummaryFinancePerItemDTO;
+import com.project.bbapalmchain.dto.projection.CashflowProjection;
 import com.project.bbapalmchain.dto.projection.ProfitLossPerDayProjection;
 import com.project.bbapalmchain.dto.projection.SummaryFinancePerItemProjection;
 import com.project.bbapalmchain.model.Receipt;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 public interface ReceiptRepository extends JpaRepository<Receipt, Long> {
 
@@ -62,6 +64,38 @@ public interface ReceiptRepository extends JpaRepository<Receipt, Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+
+    @Query(value = "SELECT " +
+            "    fi.item_category AS itemCategory, " +
+            "    fi.name AS financeItem, " +
+            "    CAST(EXTRACT(MONTH FROM r.receipt_date) AS INTEGER) AS month, " +
+            "    SUM(r.amount) AS totalAmount " +
+            "FROM {h-schema}receipt r " +
+            "JOIN {h-schema}finance_item fi ON r.finance_item_id = fi.id " +
+            "WHERE r.account_id = :accountId " +
+            "  AND CAST(EXTRACT(YEAR FROM r.receipt_date) AS INTEGER) = :year " +
+            "GROUP BY fi.item_category, fi.name, CAST(EXTRACT(MONTH FROM r.receipt_date) AS INTEGER) " +
+            "ORDER BY fi.item_category, fi.name, month",
+            nativeQuery = true)
+    List<CashflowProjection> findCashflowByYear(
+            @Param("accountId") Long accountId,
+            @Param("year") Integer year);
+
+    @Query(value = "SELECT " +
+            "    fi.item_category AS itemCategory, " +
+            "    fi.name AS financeItem, " +
+            "    CAST(EXTRACT(MONTH FROM r.receipt_date) AS INTEGER) AS month, " +
+            "    SUM(r.amount) AS totalAmount " +
+            "FROM {h-schema}receipt r " +
+            "JOIN {h-schema}finance_item fi ON r.finance_item_id = fi.id " +
+            "WHERE r.account_id IN (:accountIds) " + // Perubahan di sini (IN)
+            "  AND CAST(EXTRACT(YEAR FROM r.receipt_date) AS INTEGER) = :year " +
+            "GROUP BY fi.item_category, fi.name, CAST(EXTRACT(MONTH FROM r.receipt_date) AS INTEGER) " +
+            "ORDER BY fi.item_category, fi.name, month",
+            nativeQuery = true)
+    List<CashflowProjection> findCashflowByAccountIdsAndYear(
+            @Param("accountIds") Collection<Long> accountIds,
+            @Param("year") Integer year);
 
 
 

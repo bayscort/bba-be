@@ -17,8 +17,8 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
-#        default_schema: bba_palm_chain
-        default_schema: bba_palm_chain_dev
+        default_schema: bba_palm_chain
+#        default_schema: bba_palm_chain_dev
         order_updates: true
         jdbc:
           batch_size: 500
@@ -32,17 +32,17 @@ spring:
           sequence:
             increment_size: 1   # BARIS INI WAJIB!
     database: postgresql
-    show-sql: true
-  datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres
-    username: ${DB_USER:postgres.feqacumzbzhcnrdzxzeh}
-    password: ${DB_PWD:Adm1n1str4t0r}
+    show-sql: false
 #  datasource:
 #    type: com.zaxxer.hikari.HikariDataSource
-#    url: jdbc:postgresql://100.111.186.10:5432/db_test
-#    username: ${DB_USER:usertest}
-#    password: ${DB_PWD:password123}
+#    url: jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres
+#    username: ${DB_USER:postgres.feqacumzbzhcnrdzxzeh}
+#    password: ${DB_PWD:Adm1n1str4t0r}
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:postgresql://103.150.226.66:5432/bba_db_prod
+    username: postgres
+    password: password@123
     hikari:
       maximum-pool-size: 5      # jumlah koneksi maksimal
       minimum-idle: 2            # koneksi idle minimum
